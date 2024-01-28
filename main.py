@@ -1,12 +1,15 @@
 from tkinter import *
-import sys
 import requests
 import qbittorrentapi
 
+authenticatedClient: Client = qbt_client
+
 def authenticate():
+    global authenticatedClient
     username = entry_U.get()
     password = entry_P.get()
     server = entry_S.get()
+    # instantiate a Client using the appropriate WebUI configuration
     conn_info = dict(
         host=server,
         port=8080,
@@ -23,24 +26,32 @@ def authenticate():
     except qbittorrentapi.LoginFailed as e:
         print(e)
 
-        return qbt_client
+        authenticatedClient = qbt_client
 
 
-    headers = {'Referer': f'http://{server}:8080'}
-    data = {'username': username, 'password': password}
-    response = requests.post(f'http://{server}:8080/api/v2/auth/login', headers=headers, data=data)
-    print(response.cookies.get_dict())
-    if response.status_code == 200:
-        login_label.config(text = "Login Successful", bg='white')
 
+    # headers = {'Referer': f'http://{server}:8080'}
+    # data = {'username': username, 'password': password}
+    # response = requests.post(f'http://{server}:8080/api/v2/auth/login', headers=headers, data=data)
+    # print(response.cookies.get_dict())
+    # if response.status_code == 200:
+    #     login_label.config(text = "Login Successful", bg='white')
+
+def addTorrent():
+    client = authenticatedClient
+    print('button works')
+    print(f"qBittorrent: {client.app.version}")
+    print(f"qBittorrent Web API: {client.app.web_api_version}")
+    for k, v in client.app.build_info.items():
+        print(f"{k}: {v}")
 
 
 
 root = Tk()
 root.title('Model Definition')
-root.geometry('{}x{}'.format(600, 600))
+root.geometry('{}x{}'.format(1280, 200))
 root.configure(bg='#c6cca5')
-root.minsize(600,600)
+root.minsize(1280,200)
 
 
 # create all of the main containers
@@ -77,8 +88,15 @@ entry_U.grid(row=1, column=3,padx=5, pady=5)
 entry_P.grid(row=1, column=5,padx=5, pady=5)
 
 # create the center widgets
-center_frame.grid_rowconfigure(0, weight=1)
-center_frame.grid_columnconfigure(1, weight=1)
+torrentmagnet_label = Label(center_frame, text='Magnet:', background="#c6cca5")
+entry_Magnet = Entry(center_frame, background="white")
+addTorrent_button = Button(center_frame, text='Add Torrent', command=addTorrent)
+
+# layout the widgets in the center frame
+torrentmagnet_label.grid(row=0, column=0)
+entry_Magnet.grid(row=0, column=1, padx=5, pady=5)
+addTorrent_button.grid(row=1, column=0, pady=5
+                    )
 
 
 root.mainloop()
